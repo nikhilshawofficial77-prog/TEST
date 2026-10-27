@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en" id="htmlRoot">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinic Feedback & Service Quality Portal</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#f0fdf4', 100: '#dcfce7', 600: '#16a34a', 700: '#15803d' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* High Contrast Accessibility Theme */
+        body.high-contrast {
+            background-color: #000000 !important;
+            color: #ffff00 !important;
+        }
+        body.high-contrast * {
+            background-color: #000000 !important;
+            color: #ffff00 !important;
+            border-color: #ffff00 !important;
+        }
+        body.high-contrast button, body.high-contrast input, body.high-contrast select, body.high-contrast textarea {
+            background-color: #111111 !important;
+            color: #ffffff !important;
+            border: 2px solid #ffff00 !important;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
+
+    <!-- Header Navigation -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-brand-600 text-white p-2 rounded-lg font-bold text-xl">🏥</div>
+                <div>
+                    <h1 id="lblTitle" class="text-xl font-bold text-gray-900">CarePulse Clinic Portal</h1>
+                    <p id="lblSubTitle" class="text-xs text-gray-500">Service Quality & Feedback System</p>
+                </div>
+            </div>
+
+            <!-- Accessibility & Language Controls -->
+            <div class="flex items-center space-x-3">
+                <!-- Language Selector -->
+                <select id="langSelector" onchange="changeLanguage(this.value)" class="text-xs px-2 py-1.5 border border-gray-300 rounded-lg bg-gray-50 font-medium">
+                    <option value="en">English</option>
+                    <option value="hi">हिंदी (Hindi)</option>
+                    <option value="es">Español (Spanish)</option>
+                </select>
+
+                <!-- Audio Read Aloud Button -->
+                <button onclick="readFormAloud()" id="btnAudio" title="Read form aloud for visually impaired users" class="p-2 text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg transition flex items-center space-x-1">
+                    <span>🔊 <span id="lblAudio">Listen</span></span>
+                </button>
+
+                <!-- High Contrast Toggle -->
+                <button onclick="toggleHighContrast()" id="btnContrast" class="p-2 text-xs font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition">
+                    👁️ <span id="lblContrast">High Contrast</span>
+                </button>
+
+                <div class="h-6 w-px bg-gray-300"></div>
+
+                <!-- Navigation Tabs -->
+                <nav class="flex space-x-2">
+                    <button onclick="switchTab('patient')" id="nav-patient" class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg bg-brand-600 text-white transition">Feedback</button>
+                    <button onclick="switchTab('admin')" id="nav-admin" class="px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100 transition">Dashboard</button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 py-8 flex-grow w-full">
+
+        <!-- ================= PATIENT VIEW ================= -->
+        <section id="view-patient" class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-sm border border-gray-200">
+            <div id="formContainer">
+                <div class="mb-6 text-center">
+                    <h2 id="lblMainHeading" class="text-2xl font-bold text-gray-900">We Value Your Experience</h2>
+                    <p id="lblMainSub" class="text-sm text-gray-500 mt-1">Please share your feedback to help us improve our clinic services.</p>
+                </div>
+
+                <form id="feedbackForm" onsubmit="handleFormSubmit(event)" class="space-y-5">
+                    <!-- Anonymous Toggle -->
+                    <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-gray-200">
+                        <span id="lblAnonToggle" class="text-sm font-medium text-gray-700">Submit Anonymously?</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="isAnonymous" onchange="toggleAnonymous()" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600"></div>
+                        </label>
+                    </div>
+
+                    <!-- Patient Name (Conditional) -->
+                    <div id="nameFieldGroup">
+                        <label id="lblNameLabel" class="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
+                        <input type="text" id="patientName" placeholder="e.g., Jane Doe" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-600 focus:outline-none">
+                    </div>
+
+                    <!-- Visit Date -->
+                    <div>
+                        <label id="lblVisitDate" class="block text-sm font-medium text-gray-700 mb-1">Visit Date</label>
+                        <input type="date" id="visitDate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-600 focus:outline-none">
+                    </div>
+
+                    <!-- Service Category -->
+                    <div>
+                        <label id="lblCategory" class="block text-sm font-medium text-gray-700 mb-1">Service Category</label>
+                        <select id="serviceCategory" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-600 focus:outline-none">
+                            <option value="" id="optSelectCat">Select a category...</option>
+                            <option value="Reception / Front Desk" id="optCat1">Reception / Front Desk</option>
+                            <option value="Doctor Consultation" id="optCat2">Doctor Consultation</option>
+                            <option value="Nursing & Care" id="optCat3">Nursing & Care</option>
+                            <option value="Pharmacy" id="optCat4">Pharmacy</option>
+                            <option value="Billing & Insurance" id="optCat5">Billing & Insurance</option>
+                            <option value="Facility Cleanliness" id="optCat6">Facility Cleanliness</option>
+                        </select>
+                    </div>
+
+                    <!-- Rating -->
+                    <div>
+                        <label id="lblRating" class="block text-sm font-medium text-gray-700 mb-1">Overall Satisfaction Rating (1 to 5 Stars)</label>
+                        <div class="flex space-x-4 items-center pt-1">
+                            <label class="flex items-center space-x-1 cursor-pointer"><input type="radio" name="rating" value="1" required class="text-brand-600"><span>1 ⭐</span></label>
+                            <label class="flex items-center space-x-1 cursor-pointer"><input type="radio" name="rating" value="2" class="text-brand-600"><span>2 ⭐⭐</span></label>
+                            <label class="flex items-center space-x-1 cursor-pointer"><input type="radio" name="rating" value="3" class="text-brand-600"><span>3 ⭐⭐⭐</span></label>
+                            <label class="flex items-center space-x-1 cursor-pointer"><input type="radio" name="rating" value="4" class="text-brand-600"><span>4 ⭐⭐⭐⭐</span></label>
+                            <label class="flex items-center space-x-1 cursor-pointer"><input type="radio" name="rating" value="5" class="text-brand-600"><span>5 ⭐⭐⭐⭐⭐</span></label>
+                        </div>
+                    </div>
+
+                    <!-- Comments -->
+                    <div>
+                        <label id="lblComments" class="block text-sm font-medium text-gray-700 mb-1">Comments & Suggestions</label>
+                        <textarea id="comments" rows="4" placeholder="Tell us about your visit..." required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-600 focus:outline-none"></textarea>
+                    </div>
+
+                    <button type="submit" id="btnSubmit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-medium py-3 rounded-lg transition shadow-sm">Submit Feedback</button>
+                </form>
+            </div>
+
+            <!-- Compliment & Helpline Screen (Initially Hidden) -->
+            <div id="successCard" class="hidden text-center py-8 space-y-6">
+                <div class="w-16 h-16 bg-brand-100 text-brand-600 rounded-full flex items-center justify-center text-3xl mx-auto">🎉</div>
+                <div>
+                    <h3 id="lblThankYouTitle" class="text-2xl font-bold text-gray-900">Thank You So Much for Your Feedback!</h3>
+                    <p id="lblThankYouDesc" class="text-gray-600 mt-2 max-w-md mx-auto">Your input is invaluable in helping us maintain the highest standard of patient care and service quality.</p>
+                </div>
+
+                <!-- Helpline Box -->
+                <div class="bg-gray-50 border border-gray-200 p-5 rounded-xl max-w-md mx-auto text-left space-y-2">
+                    <h4 id="lblHelplineTitle" class="text-sm font-bold text-gray-900 flex items-center space-x-2">
+                        <span>📞</span> <span>Need Immediate Assistance? Contact Our Helpline</span>
+                    </h4>
+                    <p id="lblHelplineSub" class="text-xs text-gray-500">If you have an urgent medical query or need to speak with our clinic representative immediately:</p>
+                    <div class="pt-2">
+                        <a href="tel:1800555CLINIC" class="text-brand-600 font-bold text-lg hover:underline">1-800-555-CLINIC (24/7 Support)</a>
+                    </div>
+                </div>
+
+                <button onclick="resetPortal()" id="btnAnother" class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition">Submit Another Feedback</button>
+            </div>
+        </section>
+
+        <!-- ================= ADMIN / DASHBOARD VIEW ================= -->
+        <section id="view-admin" class="hidden space-y-6">
+            <!-- Analytics Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <p class="text-xs text-gray-500 uppercase font-semibold">Total Feedback</p>
+                    <h3 id="statTotal" class="text-3xl font-bold text-gray-900 mt-1">0</h3>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <p class="text-xs text-gray-500 uppercase font-semibold">Average Rating</p>
+                    <h3 id="statAvgRating" class="text-3xl font-bold text-brand-600 mt-1">0.0 / 5</h3>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <p class="text-xs text-gray-500 uppercase font-semibold">Pending Review</p>
+                    <h3 id="statPending" class="text-3xl font-bold text-amber-600 mt-1">0</h3>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+                    <p class="text-xs text-gray-500 uppercase font-semibold">Resolved Issues</p>
+                    <h3 id="statResolved" class="text-3xl font-bold text-blue-600 mt-1">0</h3>
+                </div>
+            </div>
+
+            <!-- Feedback Management & Reports Table -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="p-5 border-b border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900">Service Quality Reports & Moderation</h3>
+                        <p class="text-xs text-gray-500">Analyze feedback entries, update response workflows, and moderate comments.</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <select id="filterCategory" onchange="renderAdminDashboard()" class="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50">
+                            <option value="">All Categories</option>
+                            <option value="Reception / Front Desk">Reception / Front Desk</option>
+                            <option value="Doctor Consultation">Doctor Consultation</option>
+                            <option value="Nursing & Care">Nursing & Care</option>
+                            <option value="Pharmacy">Pharmacy</option>
+                            <option value="Billing & Insurance">Billing & Insurance</option>
+                            <option value="Facility Cleanliness">Facility Cleanliness</option>
+                        </select>
+                        <button onclick="exportReport()" class="px-4 py-2 text-sm font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition">Export Report</button>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-sm">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-600 border-b border-gray-200 text-xs uppercase tracking-wider">
+                                <th class="p-4">Visit Date / Submitted</th>
+                                <th class="p-4">Patient</th>
+                                <th class="p-4">Category</th>
+                                <th class="p-4">Rating</th>
+                                <th class="p-4">Comments</th>
+                                <th class="p-4">Workflow Status</th>
+                                <th class="p-4 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="feedbackTableBody" class="divide-y divide-gray-200">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 py-4 text-center text-xs text-gray-500">
+        Clinic Feedback & Service Quality Portal &copy; 2026 | Helpline: 1-800-555-CLINIC
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Multi-language dictionary
+        const translations = {
+            en: {
+                title: "CarePulse Clinic Portal",
+                subtitle: "Service Quality & Feedback System",
+                mainHeading: "We Value Your Experience",
+                mainSub: "Please share your feedback to help us improve our clinic services.",
+                anonToggle: "Submit Anonymously?",
+                nameLabel: "Your Name",
+                visitDate: "Visit Date",
+                category: "Service Category",
+                selectCat: "Select a category...",
+                cat1: "Reception / Front Desk",
+                cat2: "Doctor Consultation",
+                cat3: "Nursing & Care",
+                cat4: "Pharmacy",
+                cat5: "Billing & Insurance",
+                cat6: "Facility Cleanliness",
+                rating: "Overall Satisfaction Rating (1 to 5 Stars)",
+                comments: "Comments & Suggestions",
+                submitBtn: "Submit Feedback",
+                thankYouTitle: "Thank You So Much for Your Feedback!",
+                thankYouDesc: "Your input is invaluable in helping us maintain the highest standard of patient care and service quality.",
+                helplineTitle: "Need Immediate Assistance? Contact Our Helpline",
+                helplineSub: "If you have an urgent medical query or need to speak with our clinic representative immediately:",
+                anotherBtn: "Submit Another Feedback",
+                listenBtn: "Listen",
+                contrastBtn: "High Contrast"
+            },
+            hi: {
+                title: "केयरपल्स क्लिनिक पोर्टल",
+                subtitle: "सेवा गुणवत्ता और प्रतिक्रिया प्रणाली",
+                mainHeading: "हम आपके अनुभव का सम्मान करते हैं",
+                mainSub: "कृपया हमारी क्लिनिक सेवाओं को बेहतर बनाने में मदद करने के लिए अपनी प्रतिक्रिया साझा करें।",
+                anonToggle: "गुमनाम रूप से सबमिट करें?",
+                nameLabel: "आपका नाम",
+                visitDate: "भेंट की तारीख",
+                category: "सेवा श्रेणी",
+                selectCat: "एक श्रेणी चुनें...",
+                cat1: "स्वागत कक्ष / रिसेप्शन",
+                cat2: "डॉक्टर परामर्श",
+                cat3: "नर्सिंग और देखभाल",
+                cat4: "फार्मासिस्ट / दवा की दुकान",
+                cat5: "बिलिंग और बीमा",
+                cat6: "सुविधा स्वच्छता",
+                rating: "समग्र संतुष्टि रेटिंग (1 से 5 स्टार)",
+                comments: "टिप्पणियाँ और सुझाव",
+                submitBtn: "प्रतिक्रिया सबमिट करें",
+                thankYouTitle: "आपकी प्रतिक्रिया के लिए बहुत-बहुत धन्यवाद!",
+                thankYouDesc: "रोगी देखभाल और सेवा की उच्च गुणवत्ता बनाए रखने में आपका सुझाव अमूल्य है।",
+                helplineTitle: "तत्काल सहायता चाहिए? हमारी हेल्पलाइन से संपर्क करें",
+                helplineSub: "यदि आपका कोई जरूरी मेडिकल सवाल है या तुरंत बात करना चाहते हैं:",
+                anotherBtn: "एक और प्रतिक्रिया सबमिट करें",
+                listenBtn: "सुनें",
+                contrastBtn: "उच्च कंट्रास्ट"
+            },
+            es: {
+                title: "Portal de Clínicas CarePulse",
+                subtitle: "Sistema de Calidad de Servicio y Comentarios",
+                mainHeading: "Valoramos Su Experiencia",
+                mainSub: "Por favor, comparta sus comentarios para ayudarnos a mejorar nuestros servicios.",
+                anonToggle: "¿Enviar de forma anónima?",
+                nameLabel: "Su Nombre",
+                visitDate: "Fecha de Visita",
+                category: "Categoría de Servicio",
+                selectCat: "Seleccione una categoría...",
+                cat1: "Recepción",
+                cat2: "Consulta Médica",
+                cat3: "Enfermería y Cuidado",
+                cat4: "Farmacia",
+                cat5: "Facturación y Seguros",
+                cat6: "Limpieza de las Instalaciones",
+                rating: "Calificación de Satisfacción General (1 a 5 Estrellas)",
+                comments: "Comentarios y Sugerencias",
+                submitBtn: "Enviar Comentarios",
+                thankYouTitle: "¡Muchas Gracias por Sus Comentarios!",
+                thankYouDesc: "Su opinión es invaluable para ayudarnos a mantener el más alto estándar de atención.",
+                helplineTitle: "¿Necesita Asistencia Inmediata? Contacte Nuestra Línea de Ayuda",
+                helplineSub: "Si tiene una consulta médica urgente o necesita hablar con un representante:",
+                anotherBtn: "Enviar Otro Comentario",
+                listenBtn: "Escuchar",
+                contrastBtn: "Alto Contraste"
+            }
+        };
+
+        function changeLanguage(lang) {
+            const t = translations[lang];
+            document.getElementById('lblTitle').innerText = t.title;
+            document.getElementById('lblSubTitle').innerText = t.subtitle;
+            document.getElementById('lblMainHeading').innerText = t.mainHeading;
+            document.getElementById('lblMainSub').innerText = t.mainSub;
+            document.getElementById('lblAnonToggle').innerText = t.anonToggle;
+            document.getElementById('lblNameLabel').innerText = t.nameLabel;
+            document.getElementById('lblVisitDate').innerText = t.visitDate;
+            document.getElementById('lblCategory').innerText = t.category;
+            document.getElementById('optSelectCat').innerText = t.selectCat;
+            document.getElementById('optCat1').innerText = t.cat1;
+            document.getElementById('optCat2').innerText = t.cat2;
+            document.getElementById('optCat3').innerText = t.cat3;
+            document.getElementById('optCat4').innerText = t.cat4;
+            document.getElementById('optCat5').innerText = t.cat5;
+            document.getElementById('optCat6').innerText = t.cat6;
+            document.getElementById('lblRating').innerText = t.rating;
+            document.getElementById('lblComments').innerText = t.comments;
+            document.getElementById('btnSubmit').innerText = t.submitBtn;
+            document.getElementById('lblThankYouTitle').innerText = t.thankYouTitle;
+            document.getElementById('lblThankYouDesc').innerText = t.thankYouDesc;
+            document.getElementById('lblHelplineTitle').innerHTML = `<span>📞</span> <span>${t.helplineTitle}</span>`;
+            document.getElementById('lblHelplineSub').innerText = t.helplineSub;
+            document.getElementById('btnAnother').innerText = t.anotherBtn;
+            document.getElementById('lblAudio').innerText = t.listenBtn;
+            document.getElementById('lblContrast').innerText = t.contrastBtn;
+        }
+
+        // Accessibility: Text-to-Speech (Audio Reader)
+        function readFormAloud() {
+            if ('speechSynthesis' in window) {
+                const heading = document.getElementById('lblMainHeading').innerText;
+                const sub = document.getElementById('lblMainSub').innerText;
+                const textToRead = `${heading}. ${sub}. Please fill out your visit date, service category, rating, and comments.`;
+                const utterance = new SpeechSynthesisUtterance(textToRead);
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert("Text-to-speech is not supported by your browser.");
+            }
+        }
+
+        // Accessibility: High Contrast Mode Toggle
+        function toggleHighContrast() {
+            document.getElementById('htmlRoot').classList.toggle('high-contrast');
+            document.body.classList.toggle('high-contrast');
+        }
+
+        // Feedback is stored by the server in its SQLite database.
+        async function getStoredFeedback() {
+            const response = await fetch('/api/feedback');
+            if (!response.ok) throw new Error('Could not load feedback from the server.');
+            return response.json();
+        }
+        async function apiRequest(url, options = {}) {
+            const response = await fetch(url, { headers: { 'Content-Type': 'application/json' }, ...options });
+            if (!response.ok) {
+                const result = await response.json().catch(() => ({}));
+                throw new Error(result.error || 'The server could not complete the request.');
+            }
+            return response.status === 204 ? null : response.json();
+        }
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            })[char]);
+        }
+
+        // Tab Switcher
+        function switchTab(tab) {
+            const patientView = document.getElementById('view-patient');
+            const adminView = document.getElementById('view-admin');
+            const navPatient = document.getElementById('nav-patient');
+            const navAdmin = document.getElementById('nav-admin');
+
+            if (tab === 'patient') {
+                patientView.classList.remove('hidden');
+                adminView.classList.add('hidden');
+                navPatient.className = "px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg bg-brand-600 text-white transition";
+                navAdmin.className = "px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100 transition";
+            } else {
+                patientView.classList.add('hidden');
+                adminView.classList.remove('hidden');
+                navAdmin.className = "px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg bg-brand-600 text-white transition";
+                navPatient.className = "px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-100 transition";
+                renderAdminDashboard();
+            }
+        }
+
+        function toggleAnonymous() {
+            const isAnon = document.getElementById('isAnonymous').checked;
+            const nameGroup = document.getElementById('nameFieldGroup');
+            const nameInput = document.getElementById('patientName');
+            if (isAnon) {
+                nameGroup.style.display = 'none';
+                nameInput.value = 'Anonymous';
+            } else {
+                nameGroup.style.display = 'block';
+                nameInput.value = '';
+            }
+        }
+
+        // Handle Form Submission & Show Compliment / Helpline Screen
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            const isAnon = document.getElementById('isAnonymous').checked;
+            const name = isAnon ? 'Anonymous' : document.getElementById('patientName').value;
+            const visitDate = document.getElementById('visitDate').value;
+            const category = document.getElementById('serviceCategory').value;
+            const rating = document.querySelector('input[name="rating"]:checked').value;
+            const comments = document.getElementById('comments').value;
+
+            const submitButton = document.getElementById('btnSubmit');
+            submitButton.disabled = true;
+            try {
+                await apiRequest('/api/feedback', {
+                    method: 'POST',
+                    body: JSON.stringify({ name, visitDate, category, rating, comments })
+                });
+                document.getElementById('feedbackForm').reset();
+                document.getElementById('formContainer').classList.add('hidden');
+                document.getElementById('successCard').classList.remove('hidden');
+            } catch (error) {
+                alert(`Feedback could not be saved: ${error.message}`);
+            } finally {
+                submitButton.disabled = false;
+            }
+        }
+
+        function resetPortal() {
+            document.getElementById('successCard').classList.add('hidden');
+            document.getElementById('formContainer').classList.remove('hidden');
+            document.getElementById('isAnonymous').checked = false;
+            toggleAnonymous();
+        }
+
+        // Render Admin Dashboard
+        async function renderAdminDashboard() {
+            let list;
+            try { list = await getStoredFeedback(); }
+            catch (error) {
+                document.getElementById('feedbackTableBody').innerHTML = `<tr><td colspan="7" class="p-6 text-center text-red-600">${escapeHtml(error.message)}</td></tr>`;
+                return;
+            }
+            const categoryFilter = document.getElementById('filterCategory').value;
+
+            const total = list.length;
+            let sumRating = 0;
+            let pendingCount = 0;
+            let resolvedCount = 0;
+
+            list.forEach(item => {
+                sumRating += parseInt(item.rating);
+                if (item.status === 'Pending') pendingCount++;
+                if (item.status === 'Resolved' || item.status === 'Reviewed') resolvedCount++;
+            });
+
+            const avgRating = total > 0 ? (sumRating / total).toFixed(1) : '0.0';
+
+            document.getElementById('statTotal').innerText = total;
+            document.getElementById('statAvgRating').innerText = avgRating + ' / 5';
+            document.getElementById('statPending').innerText = pendingCount;
+            document.getElementById('statResolved').innerText = resolvedCount;
+
+            const tbody = document.getElementById('feedbackTableBody');
+            tbody.innerHTML = '';
+
+            const filteredList = categoryFilter ? list.filter(item => item.category === categoryFilter) : list;
+
+            if (filteredList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-400">No feedback entries found.</td></tr>`;
+                return;
+            }
+
+            filteredList.forEach(item => {
+                let badgeColor = 'bg-amber-100 text-amber-800';
+                if (item.status === 'Reviewed') badgeColor = 'bg-blue-100 text-blue-800';
+                if (item.status === 'Resolved') badgeColor = 'bg-brand-100 text-brand-700';
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 transition";
+                tr.innerHTML = `
+                    <td class="p-4 text-xs text-gray-500">
+                        <div class="font-medium text-gray-800">Visit: ${escapeHtml(item.visitDate)}</div>
+                        <div>Sent: ${escapeHtml(item.dateSubmitted)}</div>
+                    </td>
+                    <td class="p-4 font-medium text-gray-900">${escapeHtml(item.name)}</td>
+                    <td class="p-4"><span class="px-2.5 py-1 text-xs bg-gray-100 text-gray-700 rounded-md font-medium">${escapeHtml(item.category)}</span></td>
+                    <td class="p-4 font-bold text-gray-800">${escapeHtml(item.rating)} ⭐</td>
+                    <td class="p-4 text-gray-600 max-w-xs truncate" title="${escapeHtml(item.comments)}">${escapeHtml(item.comments)}</td>
+                    <td class="p-4"><span class="px-2.5 py-1 text-xs font-semibold rounded-full ${badgeColor}">${escapeHtml(item.status)}</span></td>
+                    <td class="p-4 text-center space-x-2">
+                        <select onchange="updateStatus(${item.id}, this.value)" class="text-xs border border-gray-300 rounded px-2 py-1 bg-white">
+                            <option value="" disabled selected>Workflow...</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Reviewed">Reviewed</option>
+                            <option value="Resolved">Resolved</option>
+                        </select>
+                        <button onclick="deleteEntry(${item.id})" class="text-red-500 hover:text-red-700 text-xs font-medium">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function updateStatus(id, newStatus) {
+            try {
+                await apiRequest(`/api/feedback/${id}`, { method: 'PATCH', body: JSON.stringify({ status: newStatus }) });
+                await renderAdminDashboard();
+            } catch (error) { alert(`Status could not be updated: ${error.message}`); }
+        }
+        async function deleteEntry(id) {
+            if (confirm("Are you sure you want to delete this feedback entry?")) {
+                try {
+                    await apiRequest(`/api/feedback/${id}`, { method: 'DELETE' });
+                    await renderAdminDashboard();
+                } catch (error) { alert(`Feedback could not be deleted: ${error.message}`); }
+            }
+        }
+
+        function exportReport() {
+            alert("Service Quality Report successfully exported!");
+        }
+
+        window.onload = function() {
+            // The backend creates the database and table when it starts.
+        };
+    </script>
+</body>
+</html>
